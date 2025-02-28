@@ -8,6 +8,10 @@ This repository is a demonstration of how to use **Lightweight Charts v5** with 
 2. Switch Between Candles and Bars series modes  
 3. Dynamic data update of the series
 
+## Preview
+
+[Netlify](https://react-lightweight-charts-example.netlify.app/)
+
 ## License
 
 This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE) file for details.

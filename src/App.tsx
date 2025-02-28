@@ -84,7 +84,7 @@ export const App = () => {
     <div className="container">
       <div className="settings">
         <div>
-          View Mode:
+          View Mode:{' '}
           <button
             disabled={viewMode === LightweightCharts.CandlestickSeries}
             onClick={() => {
@@ -100,8 +100,9 @@ export const App = () => {
             }}
           >
             Bars
-          </button>
+          </button> 
         </div>
+        <a href="https://github.com/MikalaiLappo/react-lightweight-charts-example"> Source </a>
         <div>
           Live update:{' '}
           <button onClick={() => setLiveUpdate((p) => !p)}>
