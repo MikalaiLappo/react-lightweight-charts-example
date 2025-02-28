@@ -1,32 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-import * as LightweightCharts from 'lightweight-charts';
-import * as React from 'react';
-import { APP_CONFIG, LW_CONFIG } from './config';
-import { genData, randomizeClose } from './utils';
+import { useEffect, useRef, useState } from "react";
+import * as LightweightCharts from "lightweight-charts";
+import * as React from "react";
+import { APP_CONFIG, LW_CONFIG } from "./config";
+import { genData, randomizeClose } from "./utils";
 
 export const App = () => {
   const [viewMode, setViewMode] = useState<
-    | LightweightCharts.SeriesDefinition<'Candlestick'>
-    | LightweightCharts.SeriesDefinition<'Bar'>
+    | LightweightCharts.SeriesDefinition<"Candlestick">
+    | LightweightCharts.SeriesDefinition<"Bar">
   >(LightweightCharts.CandlestickSeries);
 
   const [liveUpdate, setLiveUpdate] = useState<boolean>(true);
 
   const chartContainerRef = useRef<HTMLDivElement>(
-    undefined
+    undefined,
   ) as React.RefObject<HTMLDivElement>;
   const chartRef = useRef<LightweightCharts.IChartApi | null>(null);
   const dataRef = useRef(genData(20));
   // `Candlestick` and `Bar` share same data interface
   const seriesRef = useRef<LightweightCharts.ISeriesApi<
-    'Candlestick' | 'Bar'
+    "Candlestick" | "Bar"
   > | null>(null);
 
   // Init. chart, mount it as uncontrolled  component by a `useRef`
   useEffect(() => {
     const chart = LightweightCharts.createChart(
       chartContainerRef.current,
-      LW_CONFIG.chart
+      LW_CONFIG.chart,
     );
     chartRef.current = chart;
 
@@ -37,7 +37,6 @@ export const App = () => {
       chartRef.current = null;
     };
   }, []);
-
 
   // render series (objects) on the chart
   useEffect(() => {
@@ -55,7 +54,7 @@ export const App = () => {
       }
       seriesRef.current = null;
     };
-    // hook series re-render by reference to `viewMode` controlled state 
+    // hook series re-render by reference to `viewMode` controlled state
   }, [viewMode]);
 
   /* 
@@ -70,7 +69,7 @@ export const App = () => {
 
     const interval = setInterval(() => {
       dataRef.current[dataRef.current.length - 1] = randomizeClose(
-        dataRef.current[dataRef.current.length - 1] // .at(-1)
+        dataRef.current[dataRef.current.length - 1], // .at(-1)
       );
       seriesRef.current?.setData(dataRef.current);
     }, APP_CONFIG.updateDelay);
@@ -84,7 +83,7 @@ export const App = () => {
     <div className="container">
       <div className="settings">
         <div>
-          View Mode:{' '}
+          View Mode:{" "}
           <button
             disabled={viewMode === LightweightCharts.CandlestickSeries}
             onClick={() => {
@@ -100,13 +99,16 @@ export const App = () => {
             }}
           >
             Bars
-          </button> 
+          </button>
         </div>
-        <a href="https://github.com/MikalaiLappo/react-lightweight-charts-example"> Source </a>
+        <a href="https://github.com/MikalaiLappo/react-lightweight-charts-example">
+          {" "}
+          Source{" "}
+        </a>
         <div>
-          Live update:{' '}
+          Live update:{" "}
           <button onClick={() => setLiveUpdate((p) => !p)}>
-            {liveUpdate ? 'On' : 'Off'}
+            {liveUpdate ? "On" : "Off"}
           </button>
         </div>
       </div>

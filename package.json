@@ -1,13 +1,25 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "react-lightweight-charts-example",
+  "description": "An example project using React and Lightweight Charts.",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MikalaiLappo/react-lightweight-charts-example.git"
+  },
+  "author": "MikalaiLappo",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/MikalaiLappo/react-lightweight-charts-example/issues"
+  },
+  "homepage": "https://github.com/MikalaiLappo/react-lightweight-charts-example#readme",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,scss,json,md}\""
   },
   "dependencies": {
     "lightweight-charts": "^5.0.3",
@@ -23,6 +35,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "prettier": "^3.5.2",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"
