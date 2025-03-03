@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import * as LightweightCharts from "lightweight-charts";
-import * as React from "react";
-import { APP_CONFIG, LW_CONFIG } from "./config";
-import { genData, randomizeClose } from "./utils";
+import { LW_CONFIG } from "./config";
+import { fetchBinanceHistory } from "./binance/use-binance-http";
+import { CandleHistory } from "./interfaces";
+import { useQuery } from "@tanstack/react-query";
+import { useBinanceWS } from "./binance/use-binance-ws";
 
 export const App = () => {
   const [viewMode, setViewMode] = useState<
@@ -10,26 +12,54 @@ export const App = () => {
     | LightweightCharts.SeriesDefinition<"Bar">
   >(LightweightCharts.CandlestickSeries);
 
-  const [liveUpdate, setLiveUpdate] = useState<boolean>(true);
+  const [isWSEnabled, setIsWSEnabled] = useState<boolean>(true);
 
-  const chartContainerRef = useRef<HTMLDivElement>(
-    undefined,
-  ) as React.RefObject<HTMLDivElement>;
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<LightweightCharts.IChartApi | null>(null);
-  const dataRef = useRef(genData(20));
+  const dataRef = useRef<CandleHistory>([]);
   // `Candlestick` and `Bar` share same data interface
   const seriesRef = useRef<LightweightCharts.ISeriesApi<
     "Candlestick" | "Bar"
   > | null>(null);
 
+  const hydrate = () => {
+    seriesRef.current?.setData(dataRef.current);
+    // console.log(dataRef.current);
+  };
+
+  useBinanceWS(isWSEnabled, ({ close }) => {
+    if (!dataRef.current?.length) return;
+    const latestCandle = dataRef.current[dataRef.current.length - 1];
+    latestCandle.close = close;
+    hydrate();
+  });
+
+  const { data } = useQuery<CandleHistory, Error>({
+    queryKey: ["binanceHistory"],
+    queryFn: fetchBinanceHistory,
+    staleTime: Infinity,
+    retry: 2,
+  });
+
+  useEffect(() => {
+    if (data) {
+      dataRef.current = data;
+      hydrate();
+      chartRef.current?.timeScale().fitContent();
+      setIsWSEnabled(true);
+    }
+  }, [data]);
+
   // Init. chart, mount it as uncontrolled  component by a `useRef`
   useEffect(() => {
+    if (!chartContainerRef.current) throw Error("lifecycle error");
+
     const chart = LightweightCharts.createChart(
       chartContainerRef.current,
       LW_CONFIG.chart,
     );
-    chartRef.current = chart;
 
+    chartRef.current = chart;
     chart.timeScale().fitContent();
 
     return () => {
@@ -45,6 +75,13 @@ export const App = () => {
     const series = chartRef.current.addSeries(viewMode);
     series.applyOptions(LW_CONFIG.series.candle);
     series.setData(dataRef.current);
+    series.applyOptions({
+      priceFormat: {
+        type: "price",
+        precision: 5,
+        minMove: 0.00001,
+      },
+    });
 
     seriesRef.current = series;
 
@@ -56,28 +93,6 @@ export const App = () => {
     };
     // hook series re-render by reference to `viewMode` controlled state
   }, [viewMode]);
-
-  /* 
-    simulate current (latest) series data (candle/bar) update
-    
-    one of approaches for an actual http `react-query`-like hook:
-    1. set refetch for real-time update
-    2. update uncontrolled refs (data, series.setData) in your result cb 
-  */
-  useEffect(() => {
-    if (!liveUpdate) return;
-
-    const interval = setInterval(() => {
-      dataRef.current[dataRef.current.length - 1] = randomizeClose(
-        dataRef.current[dataRef.current.length - 1], // .at(-1)
-      );
-      seriesRef.current?.setData(dataRef.current);
-    }, APP_CONFIG.updateDelay);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [liveUpdate]);
 
   return (
     <div className="container">
@@ -106,15 +121,11 @@ export const App = () => {
           Source{" "}
         </a>
         <div>
-          Live update:{" "}
-          <button onClick={() => setLiveUpdate((p) => !p)}>
-            {liveUpdate ? "On" : "Off"}
-          </button>
+          Live DOGE-USDT update:{" "}
+          <button disabled>{isWSEnabled ? "On" : "Off"}</button>
         </div>
       </div>
       <div ref={chartContainerRef} />
     </div>
   );
 };
-
-export default App;
